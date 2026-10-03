@@ -3,6 +3,7 @@ import { StyleSheet, View, Image, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
+import { Asset } from 'expo-asset';
 import { useNavigation } from '@react-navigation/native';
 
 import { detect, INPUT_SIZE } from '../lib/detect';
@@ -19,10 +20,23 @@ const SKETCHES_DIR = `${FileSystem.documentDirectory}sketches/`;
 // into documentDirectory makes it the durable, offline-safe copy the rest of
 // the app (reviewDetections, sketchProfile, the sketch list) reads from,
 // independent of whether/when it's ever uploaded to R2.
-async function persistLocally(uri, sketchId) {
+const MAX_SIDE = 2048;
+
+async function persistLocally(uri, sketchId, width, height) {
   await FileSystem.makeDirectoryAsync(SKETCHES_DIR, { intermediates: true }).catch(() => {});
   const dest = `${SKETCHES_DIR}${sketchId}.jpg`;
-  await FileSystem.copyAsync({ from: uri, to: dest });
+  try {
+    // A full camera frame can be 50 MP (200 MB decoded). Keep the aspect, cap the long side.
+    const actions = [];
+    if (Math.max(width, height) > MAX_SIDE) {
+      actions.push({ resize: width >= height ? { width: MAX_SIDE } : { height: MAX_SIDE } });
+    }
+    const out = await ImageManipulator.manipulateAsync(uri, actions, { compress: 0.9, format: ImageManipulator.SaveFormat.JPEG });
+    await FileSystem.copyAsync({ from: out.uri, to: dest });
+  } catch (e) {
+    console.warn('photo downscale failed, keeping the original:', e.message);
+    await FileSystem.copyAsync({ from: uri, to: dest });
+  }
   return dest;
 }
 
@@ -65,6 +79,17 @@ export default function Landing({ route }) {
     handleImagePicked(result);
   };
 
+  // The bundled example runs through exactly the same on-device pipeline as a photo.
+  const useSample = async () => {
+    try {
+      const asset = Asset.fromModule(require('../assets/demo/sample-sketch.jpg'));
+      await asset.downloadAsync();
+      handleImagePicked({ assets: [{ uri: asset.localUri || asset.uri, width: asset.width, height: asset.height }] });
+    } catch (e) {
+      Alert.alert('Could not load the sample', e.message);
+    }
+  };
+
   const handleImagePicked = async (pickerResult) => {
     try {
       setUploading(true);
@@ -77,12 +102,13 @@ export default function Landing({ route }) {
         return;
       }
 
-      const localUri = await persistLocally(uri, sketchId);
+      const localUri = await persistLocally(uri, sketchId, originalWidth, originalHeight);
 
       setStatusText('Detecting elements...');
       // Letterbox, don't stretch: scale the long side to INPUT_SIZE, keep aspect,
       // pad the rest with zeros (decodeImage.js). model/eval_tflite.py: recall
       // 1.00 padded vs 0.93 stretched on the held-out set.
+      const t0 = Date.now();
       const k = INPUT_SIZE / Math.max(originalWidth, originalHeight);
       const contentW = Math.max(1, Math.round(originalWidth * k));
       const contentH = Math.max(1, Math.round(originalHeight * k));
@@ -93,6 +119,7 @@ export default function Landing({ route }) {
       );
       const pixelData = pixelsFromBase64Jpeg(detectionInput.base64, contentW, contentH, INPUT_SIZE);
       const predictions = await detect(pixelData, originalWidth, originalHeight, contentW, contentH);
+      const detectMs = Date.now() - t0;
 
       navigation.navigate('ReviewDetections', {
         sketchId,
@@ -101,6 +128,7 @@ export default function Landing({ route }) {
         predictions,
         width: originalWidth,
         height: originalHeight,
+        detectMs,
       });
     } catch (e) {
       console.error(e);
@@ -126,6 +154,7 @@ export default function Landing({ route }) {
             <Button style={styles.button} onPress={takePicture}>Take picture</Button>
             <Button variant="secondary" style={styles.button} onPress={chooseFromGallery}>Upload picture</Button>
           </View>
+          <Button variant="ghost" onPress={useSample}>No sketch handy? Try a sample</Button>
         </View>
       )}
     </Screen>
