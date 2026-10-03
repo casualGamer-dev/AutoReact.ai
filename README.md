@@ -34,6 +34,15 @@ real copy in place of placeholders, and picks a theme — matched against a desi
 through **Actian VectorAI hybrid fusion search**. Enhance is never on the critical path: no
 signal, no API key, no sponsor service, still a working app.
 
+## The sketch language
+
+Five marks, learnable in about ten seconds. This sheet ships in the app
+(`auto-layout/assets/guidelines.png`) and is what the detector was trained on:
+
+<p align="center">
+  <img src="auto-layout/assets/guidelines.png" alt="Sketch conventions: crossed box for image, squiggle for text, empty rectangle for text input, rectangle with a line for button, rounded toggle for switch" width="300">
+</p>
+
 ## Why this is not just an API call to a vision model
 
 | | |
@@ -145,11 +154,14 @@ output is exactly what `augment_dataset.py` targets.
 ## Run it
 
 ```bash
-# Mobile — needs a dev-client build; the TFLite module is native
+# Mobile — needs a dev-client build; the TFLite module is native, so Expo Go will not work
 cd auto-layout
 npm install
 cp .env.example .env          # EXPO_PUBLIC_API_URL -> your server (inlined at BUILD time)
-eas build --profile development --platform android
+
+npm run android               # local build: android/ is committed, needs Android SDK + a device
+# or, with no local toolchain:
+eas build --profile development --platform android   # then side-load the APK
 npx expo start --dev-client
 
 # Server
@@ -174,7 +186,8 @@ What we verified and what we did not — a declared gap beats a surprise during 
 | Model accuracy | AP50 = 1.0, AP = 0.73 on held-out images (`verify_tflite.py`, `eval_tflite.py`) |
 | Output tensor order | Read off the real export, not assumed; scripts auto-detect it now |
 | Offline core loop | Detection and codegen make zero network calls, by construction |
-| Server routing | `npm run selfcheck`, no live services required |
+| Layout + codegen logic | `node auto-layout/lib/selfcheck.js` — assert-based, no framework |
+| Server routing | `npm run selfcheck` in `server/`, no live services required |
 | Enhance degradation | Gemini&rarr;OpenRouter and Actian&rarr;cosine fallbacks both written and wired |
 
 | Not yet verified on hardware | Why it matters |
@@ -184,16 +197,17 @@ What we verified and what we did not — a declared gap beats a surprise during 
 | Actian wire protocol | `actian.js` was written against a speculative REST shape — keep the function signatures if you rewrite the internals |
 | iOS | Android only so far (`com.gamerdas.aicodegen`) |
 
-Known gaps: corrections are collected but nothing retrains on them yet; the dark scheme needs
-`expo-system-ui` installed to take effect natively; no device screenshots captured yet.
+Known gaps: corrections are collected but nothing retrains on them yet; `lib/detect.js` still
+carries a temporary output-shape diagnostic to be removed once a device run confirms the order;
+no device screenshots captured yet.
 
 ## Repo map
 
 | Path | What |
 |---|---|
-| `auto-layout/` | Expo / React Native app — capture, on-device detection, review, offline codegen. No UI library; a small design system in `theme/tokens.js` + `components/`. |
-| `server/` | Express + MongoDB + Cloudflare R2 + JWT. Auth, sketch CRUD, presigned uploads, `/enhance`. |
-| `model/` | Dataset (~350 labeled sketches) and the full training / augmentation / eval / stress pipeline. |
+| `auto-layout/` | Expo / React Native app (RN 0.76, Expo 52) — capture, on-device detection, review, offline codegen. `android/` is committed, so it builds locally without EAS. No UI library; a small design system in `theme/tokens.js` + `components/`. |
+| `server/` | Express + MongoDB + Cloudflare R2 + JWT. Auth, sketch CRUD, presigned uploads, `/enhance`. Imports `auto-layout/lib/{layoutSort,codeGen}.js` directly rather than re-implementing them — one code path for enhanced and offline output. |
+| `model/` | Dataset (~350 labeled sketches) and the full training / augmentation / eval / stress pipeline. `train_tflite.py` writes straight into `auto-layout/assets/model/detector.tflite`. |
 
 ## Docs
 

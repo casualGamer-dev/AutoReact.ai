@@ -2,10 +2,11 @@
 Offline eval of auto-layout/assets/model/detector.tflite on labeled images,
 without TensorFlow (uses ai-edge-litert: pip install ai-edge-litert pillow numpy).
 
-Compares how the photo is fed to the model, since the mobile app's choice
-(landing.js squashes to 320x320) has to match how Model Maker trained it:
-  squash   - resize to 320x320, aspect ignored (what the app does today)
-  pad_tl   - scale to fit, pad bottom/right with zeros (letterbox, top-left anchored)
+Compares how the photo is fed to the model, since the mobile app's choice has to
+match how Model Maker trained it:
+  squash   - resize to 320x320, aspect ignored
+  pad_tl   - scale to fit, pad bottom/right with zeros (letterbox, top-left anchored;
+             what the app does today, see decodeImage.js)
   pad_c    - scale to fit, pad evenly on both sides (centered letterbox)
 
 Metrics at IoU >= 0.5, class-aware greedy matching: precision / recall / F1,

@@ -22,12 +22,21 @@ real device run: expect shapes `[25], [100], [1], [25]` for scores/boxes(25*4=10
 If you retrain: rerun `verify_tflite.py` after - it auto-detects the output order/shapes
 (no more hardcoded indices), so it'll tell you immediately if a new export shuffles things.
 
-## 2. Mobile: expo-dev-client build (~30-60 min, needs Expo account)
+## 2. Mobile: dev-client build (needs a device; Expo Go will not work, the TFLite module is native)
+
+`auto-layout/android/` is committed, so there are two routes. Local is faster if you already
+have the Android SDK:
+```
+cd auto-layout
+npm install
+npm run android              # expo run:android - device plugged in, USB debugging on
+```
+Otherwise build in the cloud (~30-60 min, needs a free Expo account):
 ```
 cd auto-layout
 npm install
 npx expo install --check
-eas login                    # needs a free Expo account
+eas login
 eas build --profile development --platform android
 ```
 Installing the resulting APK on your device needs no paid account (Android side-load,
