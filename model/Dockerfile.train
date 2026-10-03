@@ -1,8 +1,8 @@
 # GPU training environment for model/train_gpu.py.
 # TFLite Model Maker 0.3.4 needs Python <=3.9 and TF 2.x; native Windows TensorFlow
 # lost GPU support after 2.10, so this runs in Docker (NVIDIA runtime) instead.
-#   docker build -t autolayout-train - < model/Dockerfile.train
-#   docker run --rm --gpus all -v "<repo>/model:/work" autolayout-train
+#   docker build -t autoreact-train - < model/Dockerfile.train
+#   docker run --rm --gpus all -v "<repo>/model:/work" autoreact-train
 FROM tensorflow/tensorflow:2.9.3-gpu
 RUN apt-get update && apt-get install -y --no-install-recommends libusb-1.0-0 libgl1 libglib2.0-0 && rm -rf /var/lib/apt/lists/*
 # Keep TF at 2.9.3 (the constraints file stops pip upgrading it while resolving Model Maker)

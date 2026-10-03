@@ -1,4 +1,4 @@
-# What AutoLayout.ai does, and how
+# What AutoReact.ai does, and how
 
 One paragraph: photograph a hand-drawn UI wireframe, the phone detects the
 elements in it on-device, you tap to fix anything the model got wrong, and it

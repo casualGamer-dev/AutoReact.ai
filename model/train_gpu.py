@@ -1,6 +1,6 @@
 """
 GPU training run for the sketch-element detector (EfficientDet-Lite0), inside the
-autolayout-train container (see Dockerfile.train). Same recipe as train_tflite.py but:
+autoreact-train container (see Dockerfile.train). Same recipe as train_tflite.py but:
   - trains on training_images_aug (originals + augmented variants; see augment_dataset.py)
   - writes a CANDIDATE to candidates/, never over the shipped detector.tflite -
     compare with eval_tflite.py / stress_tflite.py and adopt only if it is better.

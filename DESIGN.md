@@ -1,5 +1,5 @@
 ---
-name: AutoLayout.ai
+name: AutoReact.ai
 description: A typeset galley marked up in pencil; paper sketches become code through proofreading.
 colors:
   primary: "#1F4FD1"
@@ -102,7 +102,7 @@ components:
     height: "48px"
 ---
 
-# Design System: AutoLayout.ai
+# Design System: AutoReact.ai
 
 ## Overview
 

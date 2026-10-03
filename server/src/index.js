@@ -25,7 +25,7 @@ app.use((err, req, res, next) => {
 async function start() {
   await connectDB();
   const port = process.env.PORT || 3000;
-  app.listen(port, () => console.log(`autolayout-server listening on :${port}`));
+  app.listen(port, () => console.log(`autoreact-server listening on :${port}`));
 }
 
 if (require.main === module) start();

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-10-03T00:00:00Z",
-  "title": "Design System: AutoLayout.ai",
+  "title": "Design System: AutoReact.ai",
   "extensions": {
     "colorMeta": {
       "primary": { "role": "primary", "displayName": "Blue Pencil", "canonical": "#1F4FD1", "tonalRamp": ["#173C9E", "#1F4FD1", "#4A72DE", "#8FAAFF", "#E3EAFB"] },

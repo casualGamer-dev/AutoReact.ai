@@ -5,7 +5,7 @@ primary_target: "auto-layout/theme/tokens.js"
 related_targets: []
 ---
 
-# Surface brief: AutoLayout.ai app (Operate, Android)
+# Surface brief: AutoReact.ai app (Operate, Android)
 
 Scope: whole app visual identity replacement; behavior, detection, API, navigation untouched.
 Audience: devs/students prototyping from paper sketches, offline, one-handed.

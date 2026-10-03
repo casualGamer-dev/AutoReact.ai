@@ -1,4 +1,4 @@
-<h1 align="center">AutoLayout.ai</h1>
+<h1 align="center">AutoReact.ai</h1>
 
 <p align="center">
   <b>Photograph a paper wireframe. Get runnable React Native code. On a plane, with the wifi off.</b>
@@ -127,8 +127,8 @@ GPU training runs in Docker — native Windows TensorFlow lost GPU support after
 Maker 0.3.4 needs Python 3.9 or older:
 
 ```bash
-docker build -t autolayout-train - < model/Dockerfile.train
-docker run --rm --gpus all -v "$PWD/model:/work" autolayout-train
+docker build -t autoreact-train - < model/Dockerfile.train
+docker run --rm --gpus all -v "$PWD/model:/work" autoreact-train
 # env knobs: TRAIN_DIR  EVAL_DIR  EPOCHS(40)  BATCH(8)  OUT(candidates/detector_aug.tflite)
 ```
 
