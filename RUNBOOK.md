@@ -1,8 +1,8 @@
-# Hackathon day runbook
+# Runbook: setup, deploy, device testing
 
-Everything code-side is done (mobile app, server, model training). What's left is
-account/device/deploy work that needs live credentials or physical hardware I
-don't have here. In dependency order:
+Code is complete across all three components (mobile app, server, model training). What
+remains is account and device work that needs live credentials or physical hardware.
+Steps are in dependency order — each one assumes the previous is done.
 
 ## 1. Model - DONE
 `auto-layout/assets/model/detector.tflite` is trained and in the repo (EfficientDet-Lite0,
