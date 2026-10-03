@@ -154,11 +154,14 @@ output is exactly what `augment_dataset.py` targets.
 ## Run it
 
 ```bash
-# Mobile — needs a dev-client build; the TFLite module is native
+# Mobile — needs a dev-client build; the TFLite module is native, so Expo Go will not work
 cd auto-layout
 npm install
 cp .env.example .env          # EXPO_PUBLIC_API_URL -> your server (inlined at BUILD time)
-eas build --profile development --platform android
+
+npm run android               # local build: android/ is committed, needs Android SDK + a device
+# or, with no local toolchain:
+eas build --profile development --platform android   # then side-load the APK
 npx expo start --dev-client
 
 # Server
