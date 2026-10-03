@@ -49,6 +49,15 @@ export const marks = {
   Switch: { color: isDark ? '#FF8FD0' : '#A1226F', abbr: 'SWT' },
 };
 
+// The same five marks on ink (splash, code screen): the bright set from the dark scheme.
+export const marksOnInk = {
+  Text: { color: '#4FD1D9', abbr: 'TXT' },
+  Textfield: { color: '#8FDB74', abbr: 'FLD' },
+  Button: { color: '#FFB84D', abbr: 'BTN' },
+  Image: { color: '#C9A2FF', abbr: 'IMG' },
+  Switch: { color: '#FF8FD0', abbr: 'SWT' },
+};
+
 // The "clean proof": code is always read on ink, whatever the app scheme.
 export const code = {
   background: '#0E1117',
@@ -132,4 +141,4 @@ export const shadow = {
   },
 };
 
-export default { colors, marks, code, spacing, radii, typography, shadow };
+export default { colors, marks, marksOnInk, code, spacing, radii, typography, shadow };

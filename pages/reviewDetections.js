@@ -11,6 +11,7 @@ import { enqueuePush, enqueueCorrections } from '../lib/sync';
 import Screen from '../components/Screen';
 import Button from '../components/Button';
 import Typography from '../components/Typography';
+import MarkEditor from '../components/MarkEditor';
 import TypesetOverlay, { typesetDuration } from '../components/TypesetOverlay';
 import { haptics } from '../lib/haptics';
 import { colors, marks, spacing, radii, typography } from '../theme/tokens';
@@ -40,7 +41,7 @@ function boxAt(type, cx, cy, imgW, imgH) {
 // this is the safety net, and it doubles as free labeled training data (see
 // api.submitCorrections below / server's Correction model) for a future retrain.
 export default function ReviewDetections({ route }) {
-  const { sketchId, sname, imageUri, predictions: initialPredictions, width: originalWidth, height: originalHeight } = route.params;
+  const { sketchId, sname, imageUri, predictions: initialPredictions, width: originalWidth, height: originalHeight, detectMs } = route.params;
   const [predictions, setPredictions] = useState(initialPredictions);
   const [corrections, setCorrections] = useState([]); // { index, from, to, box }
   // Indices into `predictions` for marks the user removed as spurious
@@ -51,6 +52,7 @@ export default function ReviewDetections({ route }) {
   const [selected, setSelected] = useState(null);
   const [busy, setBusy] = useState(false);
   const [addMode, setAddMode] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [typeset, setTypeset] = useState(null); // marks flying into code, set on confirm
   const reduceMotion = React.useRef(false);
   const scrollY = React.useRef(0);
@@ -109,6 +111,23 @@ export default function ReviewDetections({ route }) {
     });
   };
 
+  // Move / resize from MarkEditor: screen px in, photo px stored.
+  const editBox = (index, b) => {
+    setPredictions((prev) => {
+      const next = [...prev];
+      next[index] = {
+        ...next[index],
+        x0: b.x / scale,
+        y0: b.y / scale,
+        x1: (b.x + b.w) / scale,
+        y1: (b.y + b.h) / scale,
+        width: b.w / scale,
+        height: b.h / scale,
+      };
+      return next;
+    });
+  };
+
   const deleteBox = (index) => {
     setDeletedIndices((prev) => new Set(prev).add(index));
     setSelected(null);
@@ -126,7 +145,7 @@ export default function ReviewDetections({ route }) {
     setBusy(true);
     const activePredictions = predictions.filter((_, i) => !deletedIndices.has(i));
     const rows = sortIntoRows(activePredictions);
-    const code = generateCode(rows, { name: sname });
+    const code = generateCode(rows, { name: sname, imageWidth: originalWidth });
 
     // Marks lift off the photo and settle into lines of code (skipped when the
     // user has Reduce Motion on, or there is nothing to typeset).
@@ -204,6 +223,9 @@ export default function ReviewDetections({ route }) {
           <Typography.Slug>
             {activeCount} {activeCount === 1 ? 'mark' : 'marks'} · {corrections.length} corrected
           </Typography.Slug>
+          {detectMs ? (
+            <Typography.Slug style={styles.badge}>On-device · {detectMs} ms · offline</Typography.Slug>
+          ) : null}
           <Typography.Caption>
             {addMode ? 'Tap the photo where the missing element is.' : 'Tap a mark to fix its type.'}
           </Typography.Caption>
@@ -233,11 +255,12 @@ export default function ReviewDetections({ route }) {
 
       <ScrollView
         ref={scrollRef}
+        scrollEnabled={!dragging}
         scrollEventThrottle={16}
         onScroll={(e) => { scrollY.current = e.nativeEvent.contentOffset.y; }}
       >
         <View style={{ width: displayWidth, height: displayHeight }}>
-          <Image source={{ uri: imageUri }} style={{ width: displayWidth, height: displayHeight }} resizeMode="contain" />
+          <Image source={{ uri: imageUri }} style={{ width: displayWidth, height: displayHeight }} resizeMode="contain" resizeMethod="resize" />
           {predictions.map((p, i) => {
             if (deletedIndices.has(i)) return null;
             const mark = marks[p.object] || { color: colors.textPrimary, abbr: '???' };
@@ -256,6 +279,16 @@ export default function ReviewDetections({ route }) {
                   height: p.height * scale,
                 }}
               >
+                {selected === i ? (
+                  <MarkEditor
+                    box={{ x: p.x0 * scale, y: p.y0 * scale, w: p.width * scale, h: p.height * scale }}
+                    bounds={{ w: displayWidth, h: displayHeight }}
+                    color={mark.color}
+                    abbr={mark.abbr}
+                    onChange={(b) => editBox(i, b)}
+                    onGesture={setDragging}
+                  />
+                ) : (
                 <TouchableOpacity
                   onPress={() => {
                     setSelected(i);
@@ -276,6 +309,7 @@ export default function ReviewDetections({ route }) {
                     {mark.abbr}
                   </Text>
                 </TouchableOpacity>
+                )}
               </Animated.View>
             );
           })}
@@ -294,7 +328,10 @@ export default function ReviewDetections({ route }) {
       {sel ? (
         <View style={styles.tray}>
           <View style={styles.trayHead}>
-            <Typography.Slug>Mark {selected + 1} is a…</Typography.Slug>
+            <View style={styles.trayTitle}>
+              <Typography.Slug>Mark {selected + 1} is a…</Typography.Slug>
+              <Typography.Caption>Drag it to move. Pull the dot to resize.</Typography.Caption>
+            </View>
             <TouchableOpacity
               onPress={() => setSelected(null)}
               style={styles.trayClose}
@@ -353,6 +390,8 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   slugText: { flex: 1 },
+  badge: { color: colors.primary, marginBottom: 2 },
+  trayTitle: { flex: 1 },
   undo: { minHeight: 48, justifyContent: 'center', paddingHorizontal: spacing.sm },
   undoText: { ...typography.slug, fontSize: 13, color: colors.primary, textTransform: 'uppercase' },
   box: {

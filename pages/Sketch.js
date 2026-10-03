@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Image, KeyboardAvoidingView, BackHandler } from 'react-native';
 import { genId, saveLocal } from '../lib/localStore';
 import { enqueuePush } from '../lib/sync';
+import { addScreenToApp } from '../lib/appStore';
 import Screen from '../components/Screen';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
@@ -35,7 +36,9 @@ export default class Sketch extends React.Component {
   }
 
   goBack() {
-    this.props.navigation.navigate('ListSketches');
+    const { appId } = this.props.route.params || {};
+    if (appId) this.props.navigation.navigate('AppDetail', { appId });
+    else this.props.navigation.navigate('ListSketches');
   }
 
   // Creates the sketch entirely on-device (localStore is the source of
@@ -50,6 +53,8 @@ export default class Sketch extends React.Component {
     try {
       const id = genId();
       const sketch = await saveLocal(id, { name });
+      const { appId } = this.props.route.params || {};
+      if (appId) await addScreenToApp(appId, id);
       enqueuePush(id);
       this.props.navigation.navigate('Landing', { sketchId: sketch._id, sname: sketch.name });
     } catch (error) {

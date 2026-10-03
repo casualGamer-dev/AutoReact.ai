@@ -66,7 +66,7 @@ export default function CompareSlider({ imageUri, width, height, children }) {
 
   return (
     <View style={[styles.frame, { width, height }]}>
-      <Image source={{ uri: imageUri }} style={StyleSheet.absoluteFill} resizeMode="contain" />
+      <Image source={{ uri: imageUri }} style={StyleSheet.absoluteFill} resizeMode="contain" resizeMethod="resize" />
 
       <Animated.View pointerEvents="none" style={[styles.layer, { left: split }]}>
         <Animated.View style={[styles.inner, { width, height, left: Animated.multiply(split, -1) }]}>

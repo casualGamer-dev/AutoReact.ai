@@ -7,8 +7,8 @@ import { colors, spacing, typography } from '../theme/tokens';
 export default class Logo extends React.Component {
   render() {
     return (
-      <View style={styles.container} accessibilityRole="header" accessibilityLabel="auto layout. Paper to code, offline.">
-        <Text style={styles.logoText}>&lt;auto layout/&gt;</Text>
+      <View style={styles.container} accessibilityRole="header" accessibilityLabel="autoreact. Paper to code, offline.">
+        <Text style={styles.logoText} numberOfLines={1} adjustsFontSizeToFit>&lt;autoreact/&gt;</Text>
         <View style={styles.rule} />
         <Text style={styles.slug}>PAPER → CODE · OFFLINE</Text>
       </View>
@@ -24,6 +24,8 @@ const styles = StyleSheet.create({
   logoText: {
     ...typography.brand,
     fontSize: 40,
+    lineHeight: 64, // this face is tall; the default line box clipped it
+    paddingVertical: 6,
     color: colors.textPrimary,
     textAlign: 'center',
   },

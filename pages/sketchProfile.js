@@ -203,9 +203,12 @@ class SketchProfile extends Component {
     this.maybeEnhance(sketchId, this.state.styleInstruction.trim(), { userInitiated: true });
   };
 
-  goBack() {
-    this.props.navigation.navigate('ListSketches');
-  }
+  goBack = async () => {
+    const { sketchId } = this.props.route.params;
+    const local = await getLocal(sketchId);
+    if (local && local.appId) this.props.navigation.navigate('AppDetail', { appId: local.appId });
+    else this.props.navigation.navigate('ListSketches');
+  };
 
   displayLayout = () => {
     const { predictions, width, height, enhancedCode, enhancedTheme, enhancedLabels } = this.state;

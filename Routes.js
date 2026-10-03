@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Login from './pages/login';
@@ -11,8 +11,11 @@ import ListSketches from './pages/displaySketches1';
 import SketchProfile from './pages/sketchProfile';
 import DisplayLayout from './pages/displayLayout';
 import DisplaySourceCode from './pages/displaySourceCode';
+import AppDetail from './pages/appDetail';
+import AppPreview from './pages/appPreview';
 
 import * as Font from 'expo-font';
+import Splash from './components/Splash';
 import { colors, typography, shadow, isDark } from './theme/tokens';
 
 const Stack = createStackNavigator();
@@ -42,6 +45,7 @@ const navTheme = {
 export default class Routes extends Component {
   state = {
     fontLoaded: false,
+    splashDone: false,
     // Always the sketch list: capture, review and code generation are
     // offline, so nobody is walled off behind Login. Signing in is optional
     // (Sync and Enhance) and reachable from the list's header.
@@ -54,10 +58,22 @@ export default class Routes extends Component {
   }
 
   render() {
-    if (!this.state.fontLoaded || !this.state.initialRoute) {
-      return null;
-    }
+    // The splash is up from the first frame (ink, matching the native splash)
+    // and lifts away once its sequence ends; the navigator mounts beneath it
+    // as soon as fonts are ready, so the first screen is already drawn.
+    const ready = this.state.fontLoaded && this.state.initialRoute;
 
+    return (
+      <View style={styles.root}>
+        {ready ? this.renderNavigator() : null}
+        {this.state.splashDone ? null : (
+          <Splash fontReady={this.state.fontLoaded} onDone={() => this.setState({ splashDone: true })} />
+        )}
+      </View>
+    );
+  }
+
+  renderNavigator() {
     return (
       <NavigationContainer theme={navTheme}>
         <Stack.Navigator
@@ -109,6 +125,16 @@ export default class Routes extends Component {
             options={{ title: 'Layout' }}
           />
           <Stack.Screen
+            name="AppDetail"
+            component={AppDetail}
+            options={{ title: 'App' }}
+          />
+          <Stack.Screen
+            name="AppPreview"
+            component={AppPreview}
+            options={{ title: 'Preview' }}
+          />
+          <Stack.Screen
             name="DisplaySourceCode"
             component={DisplaySourceCode}
             options={{ title: 'Source Code' }}
@@ -120,6 +146,10 @@ export default class Routes extends Component {
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   // Flat proof-white bar with a hairline rule - the galley's running head,
   // not a colored brand slab.
   header: {
