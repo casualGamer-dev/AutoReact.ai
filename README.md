@@ -186,7 +186,8 @@ What we verified and what we did not — a declared gap beats a surprise during 
 | Model accuracy | AP50 = 1.0, AP = 0.73 on held-out images (`verify_tflite.py`, `eval_tflite.py`) |
 | Output tensor order | Read off the real export, not assumed; scripts auto-detect it now |
 | Offline core loop | Detection and codegen make zero network calls, by construction |
-| Server routing | `npm run selfcheck`, no live services required |
+| Layout + codegen logic | `node auto-layout/lib/selfcheck.js` — assert-based, no framework |
+| Server routing | `npm run selfcheck` in `server/`, no live services required |
 | Enhance degradation | Gemini&rarr;OpenRouter and Actian&rarr;cosine fallbacks both written and wired |
 
 | Not yet verified on hardware | Why it matters |
@@ -196,16 +197,17 @@ What we verified and what we did not — a declared gap beats a surprise during 
 | Actian wire protocol | `actian.js` was written against a speculative REST shape — keep the function signatures if you rewrite the internals |
 | iOS | Android only so far (`com.gamerdas.aicodegen`) |
 
-Known gaps: corrections are collected but nothing retrains on them yet; the dark scheme needs
-`expo-system-ui` installed to take effect natively; no device screenshots captured yet.
+Known gaps: corrections are collected but nothing retrains on them yet; `lib/detect.js` still
+carries a temporary output-shape diagnostic to be removed once a device run confirms the order;
+no device screenshots captured yet.
 
 ## Repo map
 
 | Path | What |
 |---|---|
-| `auto-layout/` | Expo / React Native app — capture, on-device detection, review, offline codegen. No UI library; a small design system in `theme/tokens.js` + `components/`. |
-| `server/` | Express + MongoDB + Cloudflare R2 + JWT. Auth, sketch CRUD, presigned uploads, `/enhance`. |
-| `model/` | Dataset (~350 labeled sketches) and the full training / augmentation / eval / stress pipeline. |
+| `auto-layout/` | Expo / React Native app (RN 0.76, Expo 52) — capture, on-device detection, review, offline codegen. `android/` is committed, so it builds locally without EAS. No UI library; a small design system in `theme/tokens.js` + `components/`. |
+| `server/` | Express + MongoDB + Cloudflare R2 + JWT. Auth, sketch CRUD, presigned uploads, `/enhance`. Imports `auto-layout/lib/{layoutSort,codeGen}.js` directly rather than re-implementing them — one code path for enhanced and offline output. |
+| `model/` | Dataset (~350 labeled sketches) and the full training / augmentation / eval / stress pipeline. `train_tflite.py` writes straight into `auto-layout/assets/model/detector.tflite`. |
 
 ## Docs
 
