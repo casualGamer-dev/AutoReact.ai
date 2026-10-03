@@ -34,6 +34,15 @@ real copy in place of placeholders, and picks a theme — matched against a desi
 through **Actian VectorAI hybrid fusion search**. Enhance is never on the critical path: no
 signal, no API key, no sponsor service, still a working app.
 
+## The sketch language
+
+Five marks, learnable in about ten seconds. This sheet ships in the app
+(`auto-layout/assets/guidelines.png`) and is what the detector was trained on:
+
+<p align="center">
+  <img src="auto-layout/assets/guidelines.png" alt="Sketch conventions: crossed box for image, squiggle for text, empty rectangle for text input, rectangle with a line for button, rounded toggle for switch" width="300">
+</p>
+
 ## Why this is not just an API call to a vision model
 
 | | |
