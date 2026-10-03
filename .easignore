@@ -1,0 +1,21 @@
+# EAS Build archives the whole git repo root by default (this is a
+# monorepo - auto-layout/ is the app, model/, server/, FUNCTIONS/ are
+# siblings under the same repo but irrelevant to an Android/iOS build).
+#
+# IMPORTANT (per https://github.com/expo/fyi/blob/main/eas-build-archive.md):
+# once this file exists, EAS CLI stops respecting *any* .gitignore file -
+# node_modules/ etc. are normally excluded via auto-layout/.gitignore, but
+# with .easignore present that's no longer automatic and has to be listed
+# here explicitly, or it gets archived too. (.git itself is always excluded
+# regardless of .easignore, so no entry needed for that.)
+model/
+server/
+FUNCTIONS/
+images/
+*.md
+
+# Mirrors auto-layout/.gitignore, which no longer applies once this file exists.
+**/node_modules/
+.expo/
+dist/
+web-build/

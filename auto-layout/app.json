@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "ai-code-gen",
+    "slug": "ai-code-gen",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/GooglePlayStore.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/xxxhdpi.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FAFAFA"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.gamerdas.aicodegen",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/xxxhdpi.png",
+        "backgroundColor": "#0000"
+      },
+      "usesCleartextTraffic": true
+    },
+    "web": {
+      "favicon": "./assets/GooglePlayStore.png"
+    },
+    "plugins": [
+      "expo-dev-client",
+      "react-native-fast-tflite"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1c2a7474-c3b7-42db-92e1-2589a174a655"
+      }
+    },
+    "owner": "gamer_das"
+  }
+}
