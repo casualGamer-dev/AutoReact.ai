@@ -13,8 +13,11 @@ RAG pattern lookup.
    Mongo `_id`, then navigates to the capture screen with that id.
 
 2. **Capture** — `pages/landing.js`. Camera or gallery photo via
-   `expo-image-picker`, resized to 320×320 and JPEG-encoded via
-   `expo-image-manipulator`. The base64 JPEG is decoded to raw RGB pixels by
+   `expo-image-picker`, then **letterboxed, not stretched**: the long side is
+   scaled to `INPUT_SIZE` (320) with aspect kept, JPEG-encoded via
+   `expo-image-manipulator`, and zero-padded bottom/right into a 320×320
+   canvas. `model/eval_tflite.py` scores squash vs top-left vs centered
+   letterbox against the same labels, which is how that choice was made. The base64 JPEG is decoded to raw RGB pixels by
    `lib/decodeImage.js` (pure-JS `jpeg-js`, no native dependency — needed
    because the TFLite model wants raw pixels, not a JPEG blob).
 
@@ -24,7 +27,7 @@ RAG pattern lookup.
    `runSync()`. Output tensor order was verified by hand against the actual
    export (`[scores, boxes, count, classes]` — Model Maker does *not* use the
    classic SSD `[boxes, classes, scores, count]` order). Predictions below
-   `SCORE_THRESHOLD` (0.7) are dropped; surviving boxes are scaled from
+   `SCORE_THRESHOLD` (0.3, chosen from the `eval_tflite.py` sweep) are dropped; surviving boxes are scaled from
    normalized model-space coordinates back to the original photo's pixel
    dimensions.
 
