@@ -39,7 +39,15 @@ export default function AppPreview({ route, navigation }) {
             Screen {screens.indexOf(current) + 1} of {screens.length} · placeholder copy
           </Typography.Caption>
           <View style={styles.card}>
-            <LayoutPreview predictions={current.predictions} theme={current.enhanced_theme} labels={current.enhanced_labels} />
+            <LayoutPreview
+              predictions={current.predictions}
+              theme={current.theme || current.enhanced_theme}
+              labels={current.enhanced_labels}
+              onNavigate={(id) => {
+                const i = screens.findIndex((s) => s._id === id);
+                if (i >= 0) setActive(i);
+              }}
+            />
           </View>
         </ScrollView>
       ) : (

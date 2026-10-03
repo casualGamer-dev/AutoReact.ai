@@ -19,8 +19,8 @@ function onFill(hex) {
   return L > 0.4 ? '#12151C' : '#FFFFFF';
 }
 
-function createUIElement(item, theme, labels) {
-  const label = labels && item._idx !== undefined ? labels[item._idx] : undefined;
+function createUIElement(item, theme, labels, onNavigate) {
+  const label = (labels && item._idx !== undefined ? labels[item._idx] : undefined) || item.label;
   const primaryColor = theme?.primaryColor || colors.primary;
   const borderRadius = theme?.borderRadius ?? radii.sm;
 
@@ -30,7 +30,7 @@ function createUIElement(item, theme, labels) {
         <TextInput
           key={item._idx}
           style={[styles.input, { borderRadius }]}
-          placeholder="Enter text here"
+          placeholder={label || 'Enter text here'}
           placeholderTextColor={colors.textSecondary}
           underlineColorAndroid="transparent"
         />
@@ -39,7 +39,11 @@ function createUIElement(item, theme, labels) {
       return <Text key={item._idx} style={styles.label}>{label || 'Lorem Ipsum'}</Text>;
     case 'Button':
       return (
-        <TouchableOpacity key={item._idx} style={[styles.button, { backgroundColor: primaryColor, borderRadius }]}>
+        <TouchableOpacity
+          key={item._idx}
+          style={[styles.button, { backgroundColor: primaryColor, borderRadius }]}
+          onPress={item.goesTo && onNavigate ? () => onNavigate(item.goesTo) : undefined}
+        >
           <Text style={[styles.buttonText, { color: onFill(primaryColor) }]}>{label || 'Button'}</Text>
         </TouchableOpacity>
       );
@@ -52,7 +56,7 @@ function createUIElement(item, theme, labels) {
   }
 }
 
-export default function LayoutPreview({ predictions = [], theme, labels }) {
+export default function LayoutPreview({ predictions = [], theme, labels, onNavigate }) {
   // _idx attached before sorting so it survives sortIntoRows' reordering -
   // matches how enhance.js tags predictions before generating labels
   // server-side, so labels[item._idx] lines up with the right element here.
@@ -61,7 +65,7 @@ export default function LayoutPreview({ predictions = [], theme, labels }) {
     <>
       {rows.map((row, rowIndex) => (
         <View key={rowIndex} style={styles.rows}>
-          {row.map((item) => createUIElement(item, theme, labels))}
+          {row.map((item) => createUIElement(item, theme, labels, onNavigate))}
         </View>
       ))}
     </>

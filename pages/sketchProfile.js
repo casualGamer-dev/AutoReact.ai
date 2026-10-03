@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, useWindowDimensions, BackHandler } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, useWindowDimensions, BackHandler } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import { api } from '../api/client';
 import { getLocal, saveLocal, mergeFromServer } from '../lib/localStore';
+import { sortIntoRows } from '../lib/layoutSort';
+import { generateCode } from '../lib/codeGen';
 import Screen from '../components/Screen';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
@@ -11,7 +13,14 @@ import Typography from '../components/Typography';
 import StatusView from '../components/StatusView';
 import CompareSlider from '../components/CompareSlider';
 import LayoutPreview from '../components/LayoutPreview';
-import { colors, spacing } from '../theme/tokens';
+import { colors, spacing, typography } from '../theme/tokens';
+
+const SWATCHES = ['#1f4fd1', '#2f7a1f', '#c2540a', '#b3236f', '#6b33b8', '#12151c'];
+const CORNERS = [
+  { label: 'Sharp', value: 0 },
+  { label: 'Soft', value: 8 },
+  { label: 'Round', value: 20 },
+];
 
 // Detection now completes synchronously on-device (landing.js), so this screen
 // no longer polls Firestore waiting for a Cloud Function - it either receives
@@ -35,6 +44,7 @@ class SketchProfile extends Component {
     enhanceError: '',
     styleInstruction: '',
     needsSignIn: false,
+    theme: null,
   };
 
   componentDidMount() {
@@ -43,6 +53,7 @@ class SketchProfile extends Component {
     if (predictions) {
       this.setState({ imageUri, predictions, width, height, code, isEmpty: predictions.length === 0 });
       this.loadCachedEnhance(sketchId);
+      getLocal(sketchId).then((l) => l && l.theme && this.setState({ theme: l.theme }));
     } else {
       this.loadSketch(sketchId);
     }
@@ -76,6 +87,7 @@ class SketchProfile extends Component {
         enhancedCode: local.enhanced_code,
         enhancedTheme: local.enhanced_theme,
         enhancedLabels: local.enhanced_labels,
+        theme: local.theme || null,
         isEmpty: local.predictions.length === 0,
         isLoading: false,
       });
@@ -198,6 +210,17 @@ class SketchProfile extends Component {
     }
   };
 
+  // Offline restyle: same {primaryColor, borderRadius} theme the Enhance step uses,
+  // applied by regenerating the code on the device. No network, no account.
+  applyTheme = async (patch) => {
+    const { sketchId, sname } = this.props.route.params;
+    const { predictions, width } = this.state;
+    const theme = { primaryColor: '#1f4fd1', borderRadius: 8, ...(this.state.theme || {}), ...patch };
+    const code = generateCode(sortIntoRows(predictions), { name: sname, imageWidth: width, theme });
+    this.setState({ theme, code });
+    await saveLocal(sketchId, { theme, code });
+  };
+
   restyle = () => {
     const { sketchId } = this.props.route.params;
     this.maybeEnhance(sketchId, this.state.styleInstruction.trim(), { userInitiated: true });
@@ -217,7 +240,7 @@ class SketchProfile extends Component {
       width,
       height,
       enhancedCode,
-      theme: enhancedTheme,
+      theme: this.state.theme || enhancedTheme,
       labels: enhancedLabels,
     });
   };
@@ -235,16 +258,16 @@ class SketchProfile extends Component {
     const frameH = Math.min(frameW / aspect, this.props.windowHeight * 0.42);
 
     return (
-      <Screen>
+      <Screen center={!!(isLoading || isEmpty)}>
         {isLoading ? (
           <StatusView image={require('../assets/ml.png')} text="Please wait while your sketch is being processed." loading />
         ) : isEmpty ? (
           <StatusView image={require('../assets/no_predictions.png')} text="No results found" />
         ) : (
-          <View style={styles.content}>
+          <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
             <View style={styles.imageWrap}>
-              <CompareSlider imageUri={imageUri} width={frameW} height={frameH}>
-                <LayoutPreview predictions={predictions} theme={enhancedTheme} labels={enhancedLabels} />
+              <CompareSlider imageUri={imageUri} width={frameW} height={frameH} revealKey={JSON.stringify(this.state.theme)}>
+                <LayoutPreview predictions={predictions} theme={this.state.theme || enhancedTheme} labels={enhancedLabels} />
               </CompareSlider>
             </View>
             <View style={styles.statusRow}>
@@ -254,6 +277,41 @@ class SketchProfile extends Component {
               {this.state.needsSignIn ? (
                 <Button variant="ghost" onPress={() => this.props.navigation.navigate('Login')}>Sign in</Button>
               ) : null}
+            </View>
+            <View style={styles.themeRow}>
+              <Typography.Slug style={styles.themeLabel}>Colour</Typography.Slug>
+              <View style={styles.swatches}>
+                {SWATCHES.map((hex) => {
+                  const on = ((this.state.theme && this.state.theme.primaryColor) || '#1f4fd1') === hex;
+                  return (
+                    <TouchableOpacity
+                      key={hex}
+                      onPress={() => this.applyTheme({ primaryColor: hex })}
+                      style={[styles.swatch, { backgroundColor: hex }, on && styles.swatchOn]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Colour ${hex}`}
+                      accessibilityState={{ selected: on }}
+                    />
+                  );
+                })}
+              </View>
+              <Typography.Slug style={styles.themeLabel}>Corners</Typography.Slug>
+              <View style={styles.swatches}>
+                {CORNERS.map((c) => {
+                  const on = ((this.state.theme && this.state.theme.borderRadius) ?? 8) === c.value;
+                  return (
+                    <TouchableOpacity
+                      key={c.label}
+                      onPress={() => this.applyTheme({ borderRadius: c.value })}
+                      style={[styles.corner, on && styles.cornerOn]}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: on }}
+                    >
+                      <Text style={[styles.cornerText, on && styles.cornerTextOn]}>{c.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
             {code ? (
               <Button style={styles.button} onPress={this.displayCode}>View code</Button>
@@ -272,7 +330,7 @@ class SketchProfile extends Component {
               </View>
               <Button variant="secondary" style={styles.restyleButton} onPress={this.restyle} disabled={enhancing}>Enhance</Button>
             </View>
-          </View>
+          </ScrollView>
         )}
       </Screen>
     );
@@ -280,9 +338,13 @@ class SketchProfile extends Component {
 }
 
 const styles = StyleSheet.create({
+  scroll: {
+    width: '100%',
+  },
   content: {
     alignItems: 'stretch',
     width: '100%',
+    paddingBottom: spacing.xl,
   },
   imageWrap: {
     alignItems: 'center',
@@ -298,6 +360,15 @@ const styles = StyleSheet.create({
   button: {
     marginVertical: spacing.xs,
   },
+  themeRow: { marginVertical: spacing.xs },
+  themeLabel: { marginTop: spacing.xs },
+  swatches: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginBottom: spacing.xs },
+  swatch: { width: 40, height: 40, borderRadius: 20, marginRight: spacing.sm, marginVertical: 4, borderWidth: 3, borderColor: 'transparent' },
+  swatchOn: { borderColor: colors.textPrimary },
+  corner: { minHeight: 48, minWidth: 80, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: colors.border, borderRadius: 8, marginRight: spacing.sm, marginVertical: 4 },
+  cornerOn: { backgroundColor: colors.primary, borderColor: colors.primary },
+  cornerText: { ...typography.slug, fontSize: 13, color: colors.textPrimary, textTransform: 'uppercase' },
+  cornerTextOn: { color: colors.textOnPrimary },
   restyleRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',

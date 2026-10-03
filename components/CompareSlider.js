@@ -6,7 +6,7 @@ import { colors, spacing, typography } from '../theme/tokens';
 // Before/after wipe: the user's photo on the left, the app it became on the
 // right (children), split by a draggable handle. Opens on the photo, then
 // sweeps to the middle once so the transformation is seen, not described.
-export default function CompareSlider({ imageUri, width, height, children }) {
+export default function CompareSlider({ imageUri, width, height, children, revealKey }) {
   const split = useRef(new Animated.Value(width)).current;
   const current = useRef(width);
   const startX = useRef(0);
@@ -38,6 +38,17 @@ export default function CompareSlider({ imageUri, width, height, children }) {
       split.stopAnimation();
     };
   }, [width, split]);
+
+  // When what the app looks like changes (e.g. a new colour), wipe across to show it.
+  const firstReveal = useRef(true);
+  useEffect(() => {
+    if (firstReveal.current) {
+      firstReveal.current = false;
+      return;
+    }
+    split.stopAnimation();
+    Animated.timing(split, { toValue: width * 0.04, duration: 350, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
+  }, [revealKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const clamp = (x) => Math.min(width, Math.max(0, x));
 

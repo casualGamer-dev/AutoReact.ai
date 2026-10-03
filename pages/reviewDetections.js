@@ -6,11 +6,13 @@ import { useNavigation } from '@react-navigation/native';
 import { ELEMENT_TYPES } from '../lib/elementTypes';
 import { sortIntoRows } from '../lib/layoutSort';
 import { generateCode } from '../lib/codeGen';
-import { saveLocal } from '../lib/localStore';
+import { getLocal, saveLocal } from '../lib/localStore';
+import { appScreens } from '../lib/appStore';
 import { enqueuePush, enqueueCorrections } from '../lib/sync';
 import Screen from '../components/Screen';
 import Button from '../components/Button';
 import Typography from '../components/Typography';
+import TextField from '../components/TextField';
 import MarkEditor from '../components/MarkEditor';
 import TypesetOverlay, { typesetDuration } from '../components/TypesetOverlay';
 import { haptics } from '../lib/haptics';
@@ -58,7 +60,15 @@ export default function ReviewDetections({ route }) {
   const scrollY = React.useRef(0);
   const headerH = React.useRef(0);
   const navigation = useNavigation();
+  const [siblings, setSiblings] = useState([]); // other screens of this sketch's app, for "goes to"
   const scrollRef = React.useRef(null);
+
+  useEffect(() => {
+    (async () => {
+      const me = await getLocal(sketchId);
+      if (me && me.appId) setSiblings((await appScreens(me.appId)).filter((s) => s._id !== sketchId));
+    })();
+  }, [sketchId]);
 
   useEffect(() => {
     AccessibilityInfo.isReduceMotionEnabled().then((v) => { reduceMotion.current = v; });
@@ -124,6 +134,14 @@ export default function ReviewDetections({ route }) {
         width: b.w / scale,
         height: b.h / scale,
       };
+      return next;
+    });
+  };
+
+  const patchMark = (index, fields) => {
+    setPredictions((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], ...fields };
       return next;
     });
   };
@@ -227,7 +245,7 @@ export default function ReviewDetections({ route }) {
             <Typography.Slug style={styles.badge}>On-device · {detectMs} ms · offline</Typography.Slug>
           ) : null}
           <Typography.Caption>
-            {addMode ? 'Tap the photo where the missing element is.' : 'Tap a mark to fix its type.'}
+            {addMode ? 'Tap the photo where the missing element is.' : 'Tap a mark to set its type and text.'}
           </Typography.Caption>
         </View>
         <TouchableOpacity
@@ -327,6 +345,7 @@ export default function ReviewDetections({ route }) {
 
       {sel ? (
         <View style={styles.tray}>
+         <ScrollView style={styles.trayScroll} keyboardShouldPersistTaps="handled">
           <View style={styles.trayHead}>
             <View style={styles.trayTitle}>
               <Typography.Slug>Mark {selected + 1} is a…</Typography.Slug>
@@ -367,6 +386,40 @@ export default function ReviewDetections({ route }) {
               <Text style={styles.removeText}>Remove</Text>
             </TouchableOpacity>
           </View>
+
+          {sel.object === 'Text' || sel.object === 'Button' || sel.object === 'Textfield' ? (
+            <TextField
+              label={sel.object === 'Button' ? 'Text on the button' : sel.object === 'Textfield' ? 'Hint inside the field' : 'Text'}
+              placeholder={sel.object === 'Button' ? 'Button' : sel.object === 'Textfield' ? 'e.g. Email' : 'Text'}
+              value={sel.label || ''}
+              onChangeText={(t) => patchMark(selected, { label: t })}
+            />
+          ) : null}
+
+          {sel.object === 'Button' && siblings.length > 0 ? (
+            <View>
+              <Typography.Slug style={styles.goesLabel}>When tapped, go to</Typography.Slug>
+              <View style={styles.chips}>
+                {[{ _id: null, name: 'Nowhere' }, ...siblings].map((s) => {
+                  const on = (sel.goesTo || null) === s._id;
+                  return (
+                    <TouchableOpacity
+                      key={String(s._id)}
+                      onPress={() => patchMark(selected, { goesTo: s._id })}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: on }}
+                      style={[styles.chip, { borderColor: colors.primary }, on && { backgroundColor: colors.primary }]}
+                    >
+                      <Text style={[styles.chipText, on && { color: colors.textOnPrimary }]} numberOfLines={1}>
+                        {String(s.name).replace(/_/g, ' ')}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
+         </ScrollView>
         </View>
       ) : null}
 
@@ -392,6 +445,8 @@ const styles = StyleSheet.create({
   slugText: { flex: 1 },
   badge: { color: colors.primary, marginBottom: 2 },
   trayTitle: { flex: 1 },
+  trayScroll: { maxHeight: 340 },
+  goesLabel: { marginBottom: spacing.xs },
   undo: { minHeight: 48, justifyContent: 'center', paddingHorizontal: spacing.sm },
   undoText: { ...typography.slug, fontSize: 13, color: colors.primary, textTransform: 'uppercase' },
   box: {
