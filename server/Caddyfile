@@ -1,0 +1,3 @@
+{$AUTOLAYOUT_HOSTNAME:localhost} {
+	reverse_proxy api:3000
+}

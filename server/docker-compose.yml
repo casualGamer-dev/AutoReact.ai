@@ -1,0 +1,58 @@
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    # Inside the compose network the database is the "mongo" service, not
+    # localhost (same reasoning as ACTIAN_CONNECTION_STRING below). This wins
+    # over MONGODB_URI in .env, which stays pointed at localhost for `npm start`.
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/autolayout
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+      - actian
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+
+  # ACTIAN_CONNECTION_STRING must be "actian:6574" (the compose service name),
+  # not "localhost:6574" - api and actian are separate containers on their own
+  # network namespaces, so "localhost" from inside api only ever means api
+  # itself. Compose's embedded DNS resolves service names for us instead.
+  actian:
+    image: actian/vectorai:latest
+    restart: unless-stopped
+    environment:
+      - ACTIAN_VECTORAI_ACCEPT_EULA=YES
+    volumes:
+      - actian_data:/var/lib/actian-vectorai
+    ports:
+      - "6573-6575:6573-6575"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
+volumes:
+  mongo_data:
+  caddy_data:
+  caddy_config:
+  actian_data:

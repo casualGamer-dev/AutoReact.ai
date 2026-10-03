@@ -34,4 +34,4 @@ yarn-error.*
 .actian_data/
 .actian_data;*
 /auto-layout
-/server
+
