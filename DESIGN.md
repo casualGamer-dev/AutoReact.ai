@@ -225,6 +225,5 @@ Small, even radii: 6 (sm) and 12 (md). Everything interactive (buttons, fields, 
 - Legacy raster illustrations sit on a light sheet and are not re-skinned for the ink scheme.
 - No device screenshots were captured; the system is recorded from source.
 - Marks-resolve-into-code motion, ripple, and haptics were not built.
-- The dark scheme needs `expo-system-ui` installed to take effect natively.
 - `typography` colors are resolved at module load, so the scheme cannot change mid-session (by design, activity recreates on OS change).
 - The detection flag reuses on-primary text over class colors; contrast of that pairing was not measured.
