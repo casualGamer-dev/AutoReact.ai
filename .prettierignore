@@ -1,0 +1,12 @@
+node_modules/
+model/
+FUNCTIONS/
+.expo/
+dist/
+web-build/
+android/
+ios/
+*.tflite
+*.record
+package-lock.json
+yarn.lock

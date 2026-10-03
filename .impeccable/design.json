@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-03T00:00:00Z",
+  "title": "Design System: AutoLayout.ai",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Blue Pencil", "canonical": "#1F4FD1", "tonalRamp": ["#173C9E", "#1F4FD1", "#4A72DE", "#8FAAFF", "#E3EAFB"] },
+      "error": { "role": "secondary", "displayName": "Red Pencil", "canonical": "#BE2525", "tonalRamp": ["#BE2525", "#FF8A8A"] },
+      "background": { "role": "neutral", "displayName": "Proof White", "canonical": "#F3F5F8", "tonalRamp": ["#12151C", "#566070", "#E7EBF1", "#F3F5F8"] },
+      "code-background": { "role": "neutral", "displayName": "Clean-Proof Ink", "canonical": "#0E1117", "tonalRamp": ["#0E1117", "#8A93A6", "#E6EAF2"] }
+    },
+    "typographyMeta": {
+      "heading": { "displayName": "Heading", "purpose": "Screen titles." },
+      "body": { "displayName": "Body", "purpose": "Default text and button labels." },
+      "slug": { "displayName": "Slug", "purpose": "Mono status lines, counts, labels, mark flags." },
+      "code": { "displayName": "Code", "purpose": "Code viewer lines and gutter." }
+    },
+    "shadows": [
+      { "name": "raised", "value": "0 3px 8px rgba(0,0,0,0.1) (elevation 2)", "purpose": "The single soft lift; hairlines are preferred." },
+      { "name": "header", "value": "none", "purpose": "Headers are flat." }
+    ],
+    "motion": [
+      { "name": "press", "value": "scale 0.96 in 100ms, spring back damping 15 stiffness 300", "purpose": "Pressable feedback." },
+      { "name": "mark-enter", "value": "FadeIn 250ms, delay 70ms per mark", "purpose": "Detection boxes landing on the photo." }
+    ],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one blue-pencil action on a screen.",
+      "html": "<button class=\"ds-btn-primary\">Looks good</button>",
+      "css": ".ds-btn-primary { background: #1F4FD1; color: #fff; min-height: 48px; padding: 10px 24px; border: none; border-radius: 12px; font: 600 17px Roboto, sans-serif; } .ds-btn-primary:active { transform: scale(0.96); } .ds-btn-primary:focus-visible { outline: 2px solid #173C9E; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined blue action.",
+      "html": "<button class=\"ds-btn-secondary\">Retake</button>",
+      "css": ".ds-btn-secondary { background: transparent; color: #1F4FD1; min-height: 48px; padding: 10px 24px; border: 1.5px solid #1F4FD1; border-radius: 12px; font: 600 17px Roboto, sans-serif; } .ds-btn-secondary:active { transform: scale(0.96); } .ds-btn-secondary:focus-visible { outline: 2px solid #173C9E; outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "text-field",
+      "description": "Labelled field with slug label.",
+      "html": "<label class=\"ds-field-label\">EMAIL</label><input class=\"ds-input\" placeholder=\"you@example.com\">",
+      "css": ".ds-field-label { display: block; font: 12px monospace; letter-spacing: 0.6px; color: #566070; margin-bottom: 4px; } .ds-input { background: #E7EBF1; color: #12151C; min-height: 48px; padding: 10px 16px; border: 1px solid rgba(18,21,28,0.14); border-radius: 12px; font: 16px Roboto, sans-serif; } .ds-input:focus-visible { outline: 2px solid #1F4FD1; }"
+    },
+    {
+      "name": "Mark Chip",
+      "kind": "chip",
+      "refersTo": "mark-chip",
+      "description": "Class chip in the correction tray; selected is filled.",
+      "html": "<span class=\"ds-chip\"><b>BTN</b> Button</span> <span class=\"ds-chip ds-chip-on\"><b>TXT</b> Text</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 14px; border: 1.5px solid #9A5A00; border-radius: 12px; background: #F3F5F8; color: #12151C; font: 600 15px Roboto, sans-serif; } .ds-chip b { font: 12px monospace; letter-spacing: 0.6px; color: #9A5A00; } .ds-chip-on { background: #0B6E78; border-color: #0B6E78; color: #fff; } .ds-chip-on b { color: #fff; }"
+    },
+    {
+      "name": "Margin Flag Box",
+      "kind": "custom",
+      "refersTo": "mark-chip",
+      "description": "Hairline detection box with abbreviation flag.",
+      "html": "<div class=\"ds-box\"><span class=\"ds-flag\">FLD</span></div>",
+      "css": ".ds-box { position: relative; width: 160px; height: 56px; border: 1.5px solid #2F7A1F; } .ds-flag { position: absolute; left: -1.5px; top: 0; padding: 1px 5px; background: #2F7A1F; color: #fff; font: 12px monospace; letter-spacing: 0.6px; }"
+    },
+    {
+      "name": "Code Line",
+      "kind": "custom",
+      "refersTo": "code-background",
+      "description": "Ink code viewer line with gutter and syntax hues.",
+      "html": "<div class=\"ds-code\"><span class=\"ds-gutter\">1</span><span><span class=\"ds-kw\">import</span> React <span class=\"ds-kw\">from</span> <span class=\"ds-str\">'react'</span>;</span></div>",
+      "css": ".ds-code { background: #0E1117; color: #E6EAF2; font: 13px/20px monospace; padding: 8px 0; display: flex; } .ds-gutter { width: 28px; text-align: right; padding-right: 8px; margin-right: 8px; color: #8A93A6; border-right: 1px solid rgba(230,234,242,0.12); } .ds-kw { color: #8FAAFF; } .ds-str { color: #F2C94C; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Proof Marks",
+    "overview": "Review is proofreading. A machine sets a first proof, the user marks corrections in pencil, and the marks are typeset into code. The interface is the galley: a cool proof-white ground (or its ink-dark twin), near-black ink for text, and two pencils. Blue pencil means \"you can tap this.\" Red pencil means \"correct or delete.\" Nothing else carries those meanings.",
+    "keyCharacteristics": [
+      "Two schemes (proof-white, ink) resolved once at launch from Appearance; role names identical in both.",
+      "Blue = action, red = correct/delete, each exclusive to that meaning.",
+      "Five detected element classes are five pencil marks, each with a 3-letter abbreviation so class is never color alone.",
+      "Mono slug line voice for status, counts, labels, and code; Roboto for everything spoken.",
+      "Flat by default; a hairline is the primary divider."
+    ],
+    "rules": [
+      { "name": "The Two Pencils Rule", "body": "Blue is only for what can be tapped; red is only for correcting or removing. Never use either for decoration or for a class mark.", "section": "colors" },
+      { "name": "The Mark Never Alone Rule", "body": "A class is always color plus abbreviation (and its word in the tray). Selected chips are filled, not only recolored.", "section": "colors" },
+      { "name": "The Always-Ink Code Rule", "body": "Code is read on the fixed ink palette, whatever the OS scheme.", "section": "colors" },
+      { "name": "The Slug Line Rule", "body": "Machine-ish facts (counts, status, labels) are set in the mono slug; human sentences in Roboto.", "section": "typography" },
+      { "name": "The Hairline First Rule", "body": "Separate regions with a hairline or a tonal step before reaching for the raised shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do draw colors from the resolved colors, marks, and code exports; never hardcode hex in screens.",
+      "Do keep 48dp minimum for anything tappable.",
+      "Do pair every class color with its abbreviation.",
+      "Do keep the code screen on the ink palette."
+    ],
+    "donts": [
+      "Don't use blue for anything that is not an action, or red for anything that is not correct/delete.",
+      "Don't use the pastel-green pill utility look; no pill shapes.",
+      "Don't convey state by color alone; selection is also filled or ruled.",
+      "Don't add elevation to regions that a hairline can separate."
+    ]
+  }
+}

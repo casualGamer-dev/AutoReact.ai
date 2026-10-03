@@ -1,0 +1,37 @@
+# dependencies
+node_modules/
+
+# env / secrets
+.env
+.env.*.local
+.env.local
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Android
+android/build/
+android/app/build/
+android/app/.cxx/
+android/.gradle/
+android/local.properties
+*.iml
+*.hprof
+
+# macOS
+.DS_Store
+
+# logs
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# misc local runtime data
+.actian_data/
+.actian_data;*
+/auto-layout
+/server
